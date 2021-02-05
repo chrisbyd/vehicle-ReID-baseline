@@ -126,7 +126,7 @@ def eval_veri(distmat, q_pids, g_pids, q_camids, g_camids, max_rank):
 def evaluate(distmat, q_pids, g_pids, q_camids, g_camids, max_rank=50,dataset_name = 'veri'):
     if dataset_name == 'veri':
         return eval_veri(distmat, q_pids, g_pids, q_camids, g_camids, max_rank)
-    elif dataset_name == 'vehicle':
+    elif dataset_name == 'vehicleID':
         return eval_vehicleid(distmat,q_pids,g_pids,q_camids,g_camids,max_rank)
     else:
         raise NotImplementedError("The dataset :{} is not implemented".format(dataset_name))
