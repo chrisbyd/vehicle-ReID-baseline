@@ -11,7 +11,7 @@ python train_hash.py \
 --lr 0.0003 \
 --max-epoch 60 \
 --stepsize 20 40 \
---train-batch-size 96 \
+--train-batch-size 240 \
 --test-batch-size 100 \
 --hash-bit-number 2048 \
 -a reshash \
