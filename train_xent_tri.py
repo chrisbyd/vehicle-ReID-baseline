@@ -114,7 +114,7 @@ def main():
     '''
     for epoch in range(args.start_epoch, args.max_epoch):
         print("The name of target dataset",args.target_names[0])
-        train(epoch, model, criterion_xent, criterion_htri, optimizer, trainloader, use_gpu, logger= logger)
+      #  train(epoch, model, criterion_xent, criterion_htri, optimizer, trainloader, use_gpu, logger= logger)
 
         scheduler.step()
 
@@ -136,7 +136,7 @@ def main():
                         cmc[15], cmc[16], cmc[17], cmc[18], cmc[19], mAP))
                 results = [item for item in cmc[:20]] + [mAP]
                 model_name = 'VehicleNet-{}'.format(0)
-                results_to_excel(results, model_name, args.dataset_names[0])
+                results_to_excel(results, model_name, args.target_names[0])
 
             model_save_dir = args.save_dir
             model_save_dir = model_save_dir + '{}_{}_{}.pth'.format(args.source_names,0,epoch)
