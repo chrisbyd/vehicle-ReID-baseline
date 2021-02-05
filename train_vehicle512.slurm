@@ -4,7 +4,7 @@
 #SBATCH --partition=dgx2
 #SBATCH -n 4
 #SBATCH -N 1
-#SBATCH --cpus-per-task=6
+#SBATCH --cpus-per-task=4
 #SBATCH --gres=gpu:1
 #SBATCH --mail-type=end
 #SBATCH --mail-user=chenyongbiao0319@sjtu.edu.cn
