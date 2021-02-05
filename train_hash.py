@@ -140,7 +140,7 @@ def main():
                 results_to_excel(results, model_name, args.target_names[0])
 
             model_save_dir = args.save_dir
-            model_save_dir = model_save_dir + '{}_{}_{}.pth'.format(args.source_names[0],0,epoch)
+            model_save_dir = model_save_dir + '{}_{}_{}.pth'.format(args.source_names[0],args.hash_bit_number,epoch)
             save_checkpoint({
                 'state_dict': model.state_dict(),
                 'epoch': epoch + 1,
