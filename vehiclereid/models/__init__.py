@@ -1,11 +1,12 @@
 from __future__ import absolute_import
 
 from .resnet import *
-
+from .backbone import resnet50 as reshash
 
 __model_factory = {
     # image classification models
     'resnet50': resnet50,
+    'reshash' : reshash,
     'resnet50_fc512': resnet50_fc512,
 }
 

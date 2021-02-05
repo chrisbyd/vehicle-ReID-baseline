@@ -4,7 +4,7 @@ from __future__ import print_function
 
 from .cross_entropy_loss import CrossEntropyLoss
 from .hard_mine_triplet_loss import TripletLoss
-
+from .quant_loss import QuantLoss
 
 def DeepSupervision(criterion, xs, y):
     """

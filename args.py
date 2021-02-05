@@ -24,6 +24,7 @@ def argument_parser():
                         help='width of an image')
     parser.add_argument('--train-sampler', type=str, default='RandomIdentitySampler',
                         help='sampler for trainloader')
+    parser.add_argument('--hash-bit-number', default= 256, type= str, help= 'the number of hash bits')
 
     # ************************************************************
     # Data augmentation
