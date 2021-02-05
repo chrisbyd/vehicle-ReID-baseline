@@ -113,6 +113,7 @@ def main():
         optimizer.load_state_dict(initial_optim_state)
     '''
     for epoch in range(args.start_epoch, args.max_epoch):
+        print("The name of target dataset",args.target_names[0])
         train(epoch, model, criterion_xent, criterion_htri, optimizer, trainloader, use_gpu, logger= logger)
 
         scheduler.step()
@@ -125,7 +126,7 @@ def main():
                 print('Evaluating {} ...'.format(name))
                 queryloader = testloader_dict[name]['query']
                 galleryloader = testloader_dict[name]['gallery']
-                cmc, mAP = test(model, queryloader, galleryloader, use_gpu, dataset_name= args.target_names)
+                cmc, mAP = test(model, queryloader, galleryloader, use_gpu, dataset_name= args.target_names[0])
                 print(
                     'The cmc: Rank1:{},Rank2:{},Rank3:{},Rank4:{} Rank5:{},Rank6:{},Rank7:{},Rank8:{},Rank9:{}, Rank10:{}'
                     'Rank11:{},Rank12:{},Rank13:{},Rank14{},Rank15:{},Rank16:{},Rank17:{},Rank18:{},Rank19:{},Rank20:{},mAP is {}'.format(
@@ -135,7 +136,7 @@ def main():
                         cmc[15], cmc[16], cmc[17], cmc[18], cmc[19], mAP))
                 results = [item for item in cmc[:20]] + [mAP]
                 model_name = 'VehicleNet-{}'.format(0)
-                results_to_excel(results, model_name, args.dataset_names)
+                results_to_excel(results, model_name, args.dataset_names[0])
 
             model_save_dir = args.save_dir
             model_save_dir = model_save_dir + '{}_{}_{}.pth'.format(args.source_names,0,epoch)
