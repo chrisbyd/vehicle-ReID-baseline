@@ -114,7 +114,7 @@ def main():
     '''
     for epoch in range(args.start_epoch, args.max_epoch):
         print("The name of target dataset",args.target_names[0])
-      #  train(epoch, model, criterion_xent, criterion_htri, optimizer, trainloader, use_gpu, logger= logger)
+        train(epoch, model, criterion_xent, criterion_htri, optimizer, trainloader, use_gpu, logger= logger)
 
         scheduler.step()
 
