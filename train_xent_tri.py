@@ -13,13 +13,15 @@ import torch
 import torch.nn as nn
 import torch.backends.cudnn as cudnn
 
+import logging
+
 from args import argument_parser, dataset_kwargs, optimizer_kwargs, lr_scheduler_kwargs
 from vehiclereid.data_manager import ImageDataManager
 from vehiclereid import models
 from vehiclereid.losses import CrossEntropyLoss, TripletLoss, DeepSupervision
 from vehiclereid.utils.iotools import check_isfile
 from vehiclereid.utils.avgmeter import AverageMeter
-from vehiclereid.utils.loggers import Logger, RankLogger
+from vehiclereid.utils.loggers import setup_logger
 from vehiclereid.utils.torchtools import count_num_param, accuracy, \
     load_pretrained_weights, save_checkpoint, resume_from_checkpoint
 from vehiclereid.utils.visualtools import visualize_ranked_results
@@ -27,7 +29,7 @@ from vehiclereid.utils.generaltools import set_random_seed
 from vehiclereid.eval_metrics import evaluate
 from vehiclereid.optimizers import init_optimizer
 from vehiclereid.lr_schedulers import init_lr_scheduler
-
+from vehiclereid.utils import results_to_excel, make_dirs
 # global variables
 parser = argument_parser()
 args = parser.parse_args()
@@ -42,9 +44,12 @@ def main():
     use_gpu = torch.cuda.is_available()
     if args.use_cpu:
         use_gpu = False
-    log_name = 'log_test.txt' if args.evaluate else 'log_train.txt'
-    sys.stdout = Logger(osp.join(args.save_dir, log_name))
+
     print('==========\nArgs:{}\n=========='.format(args))
+    output_path = './out/base'
+    make_dirs(output_path)
+    logger = setup_logger("{}_{}_{}_train".format(args.target_names, args.arch, 0),
+                          output_path, if_train=True)
 
     if use_gpu:
         print('Currently using GPU {}'.format(args.gpu_devices))
@@ -74,6 +79,8 @@ def main():
     if args.resume and check_isfile(args.resume):
         args.start_epoch = resume_from_checkpoint(args.resume, model, optimizer=optimizer)
 
+    logger = logging.getLogger("{}_{}_{}_train".format(args.target_names, args.arch, 0))
+
     if args.evaluate:
         print('Evaluate only')
 
@@ -81,7 +88,7 @@ def main():
             print('Evaluating {} ...'.format(name))
             queryloader = testloader_dict[name]['query']
             galleryloader = testloader_dict[name]['gallery']
-            distmat = test(model, queryloader, galleryloader, use_gpu, return_distmat=True)
+            distmat = test(model, queryloader, galleryloader, use_gpu, return_distmat=True, dataset_name= args.target_names)
 
             if args.visualize_ranks:
                 visualize_ranked_results(
@@ -92,7 +99,7 @@ def main():
         return
 
     time_start = time.time()
-    ranklogger = RankLogger(args.source_names, args.target_names)
+
     print('=> Start training')
     '''
     if args.fixbase_epoch > 0:
@@ -106,36 +113,47 @@ def main():
         optimizer.load_state_dict(initial_optim_state)
     '''
     for epoch in range(args.start_epoch, args.max_epoch):
-        train(epoch, model, criterion_xent, criterion_htri, optimizer, trainloader, use_gpu)
+        train(epoch, model, criterion_xent, criterion_htri, optimizer, trainloader, use_gpu, logger= logger)
 
         scheduler.step()
 
         if (epoch + 1) > args.start_eval and args.eval_freq > 0 and (epoch + 1) % args.eval_freq == 0 or (
                 epoch + 1) == args.max_epoch:
-            print('=> Test')
+            print('=>Start Testing the model on dataset:{}'.format(args.target_names))
 
             for name in args.target_names:
                 print('Evaluating {} ...'.format(name))
                 queryloader = testloader_dict[name]['query']
                 galleryloader = testloader_dict[name]['gallery']
-                rank1 = test(model, queryloader, galleryloader, use_gpu)
-                ranklogger.write(name, epoch + 1, rank1)
+                cmc, mAP = test(model, queryloader, galleryloader, use_gpu, dataset_name= args.target_names)
+                print(
+                    'The cmc: Rank1:{},Rank2:{},Rank3:{},Rank4:{} Rank5:{},Rank6:{},Rank7:{},Rank8:{},Rank9:{}, Rank10:{}'
+                    'Rank11:{},Rank12:{},Rank13:{},Rank14{},Rank15:{},Rank16:{},Rank17:{},Rank18:{},Rank19:{},Rank20:{},mAP is {}'.format(
+                        cmc[0], cmc[1], cmc[2], cmc[3], cmc[4], cmc[5], cmc[6], cmc[7], cmc[8], cmc[9], cmc[10],
+                        cmc[11], cmc[12],
+                        cmc[13], cmc[14],
+                        cmc[15], cmc[16], cmc[17], cmc[18], cmc[19], mAP))
+                results = [item for item in cmc[:20]] + [mAP]
+                model_name = 'VehicleNet-{}'.format(0)
+                results_to_excel(results, model_name, args.dataset_names)
 
+            model_save_dir = args.save_dir
+            model_save_dir = model_save_dir + '{}_{}_{}.pth'.format(args.source_names,0,epoch)
             save_checkpoint({
                 'state_dict': model.state_dict(),
-                'rank1': rank1,
                 'epoch': epoch + 1,
                 'arch': args.arch,
                 'optimizer': optimizer.state_dict(),
-            }, args.save_dir)
+            }, model_save_dir)
+
 
     elapsed = round(time.time() - time_start)
     elapsed = str(datetime.timedelta(seconds=elapsed))
     print('Elapsed {}'.format(elapsed))
-    ranklogger.show_summary()
 
 
-def train(epoch, model, criterion_xent, criterion_htri, optimizer, trainloader, use_gpu):
+
+def train(epoch, model, criterion_xent, criterion_htri, optimizer, trainloader, use_gpu, logger = None):
     xent_losses = AverageMeter()
     htri_losses = AverageMeter()
     accs = AverageMeter()
@@ -176,7 +194,7 @@ def train(epoch, model, criterion_xent, criterion_htri, optimizer, trainloader, 
         accs.update(accuracy(outputs, pids)[0])
 
         if (batch_idx + 1) % args.print_freq == 0:
-            print('Epoch: [{0}][{1}/{2}]\t'
+            logger.info('Epoch: [{0}][{1}/{2}]\t'
                   'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
                   'Data {data_time.val:.4f} ({data_time.avg:.4f})\t'
                   'Xent {xent.val:.4f} ({xent.avg:.4f})\t'
@@ -193,7 +211,7 @@ def train(epoch, model, criterion_xent, criterion_htri, optimizer, trainloader, 
         end = time.time()
 
 
-def test(model, queryloader, galleryloader, use_gpu, ranks=[1, 5, 10, 20], return_distmat=False):
+def test(model, queryloader, galleryloader, use_gpu, ranks=[1, 5, 10, 20], return_distmat=False, dataset_name = None):
     batch_time = AverageMeter()
 
     model.eval()
@@ -247,7 +265,7 @@ def test(model, queryloader, galleryloader, use_gpu, ranks=[1, 5, 10, 20], retur
 
     print('Computing CMC and mAP')
     # cmc, mAP = evaluate(distmat, q_pids, g_pids, q_camids, g_camids, args.target_names)
-    cmc, mAP = evaluate(distmat, q_pids, g_pids, q_camids, g_camids)
+    cmc, mAP = evaluate(distmat, q_pids, g_pids, q_camids, g_camids,dataset_name= dataset_name)
 
     print('Results ----------')
     print('mAP: {:.1%}'.format(mAP))
@@ -258,7 +276,7 @@ def test(model, queryloader, galleryloader, use_gpu, ranks=[1, 5, 10, 20], retur
 
     if return_distmat:
         return distmat
-    return cmc[0]
+    return cmc, mAP
 
 
 if __name__ == '__main__':

@@ -47,7 +47,7 @@ class VehicleID(BaseImageDataset):
         elif self.test_size == 2400:
             self.test_list = osp.join(self.split_dir, 'test_list_2400.txt')
 
-        print(self.test_list)
+       # print(self.test_list)
 
         self.check_before_run()
 
@@ -149,8 +149,8 @@ class VehicleID(BaseImageDataset):
             train_pid2label = self.get_pid2label(train_pids)
         else:
             train_pid2label = None
-        for key, value in train_pid2label.items():
-            print('{key}:{value}'.format(key=key, value=value))
+       # for key, value in train_pid2label.items():
+          #  print('{key}:{value}'.format(key=key, value=value))
 
         train = self.parse_img_pids(train_data, train_pid2label)
         query = self.parse_img_pids(query_data)

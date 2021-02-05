@@ -1,0 +1,6 @@
+log/
+out/
+vehiclereid/datasets/VehicleID
+vehiclereid/datasets/VeRi
+*.pyc
+*idea

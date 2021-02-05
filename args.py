@@ -7,7 +7,7 @@ def argument_parser():
     # ************************************************************
     # Datasets (general)
     # ************************************************************
-    parser.add_argument('--root', type=str, default='./datasets',
+    parser.add_argument('--root', type=str, default='./vehiclereid/datasets',
                         help='root path to data directory')
     parser.add_argument('-s', '--source-names', type=str, required=True, nargs='+',
                         help='source dataset for training(delimited by space)')
@@ -22,7 +22,7 @@ def argument_parser():
                         help='height of an image')
     parser.add_argument('--width', type=int, default=256,
                         help='width of an image')
-    parser.add_argument('--train-sampler', type=str, default='RandomSampler',
+    parser.add_argument('--train-sampler', type=str, default='RandomIdentitySampler',
                         help='sampler for trainloader')
 
     # ************************************************************
@@ -68,7 +68,7 @@ def argument_parser():
     parser.add_argument('--start-epoch', default=0, type=int,
                         help='manual epoch number (useful when restart)')
 
-    parser.add_argument('--train-batch-size', default=32, type=int,
+    parser.add_argument('--train-batch-size', default=120, type=int,
                         help='training batch size')
     parser.add_argument('--test-batch-size', default=100, type=int,
                         help='test batch size')
@@ -94,7 +94,7 @@ def argument_parser():
     # ************************************************************
     parser.add_argument('--margin', type=float, default=0.3,
                         help='margin for triplet loss')
-    parser.add_argument('--num-instances', type=int, default=4,
+    parser.add_argument('--num-instances', type=int, default=6,
                         help='number of instances per identity')
     parser.add_argument('--lambda-xent', type=float, default=1,
                         help='weight to balance cross entropy loss')
@@ -115,7 +115,7 @@ def argument_parser():
                         help='load pretrained weights but ignore layers that don\'t match in size')
     parser.add_argument('--evaluate', action='store_true',
                         help='evaluate only')
-    parser.add_argument('--eval-freq', type=int, default=-1,
+    parser.add_argument('--eval-freq', type=int, default=1,
                         help='evaluation frequency (set to -1 to test only in the end)')
     parser.add_argument('--start-eval', type=int, default=0,
                         help='start to evaluate after a specific epoch')
@@ -131,7 +131,7 @@ def argument_parser():
                         help='manual seed')
     parser.add_argument('--resume', type=str, default='', metavar='PATH',
                         help='resume from a checkpoint')
-    parser.add_argument('--save-dir', type=str, default='log',
+    parser.add_argument('--save-dir', type=str, default='./out/models/',
                         help='path to save log and model weights')
     parser.add_argument('--use-cpu', action='store_true',
                         help='use cpu')

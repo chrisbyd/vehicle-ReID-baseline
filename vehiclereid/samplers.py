@@ -84,6 +84,7 @@ def build_train_sampler(data_source,
     """
 
     if train_sampler == 'RandomIdentitySampler':
+        print("Using random indentity samplers")
         sampler = RandomIdentitySampler(data_source, train_batch_size, num_instances)
 
     else:
