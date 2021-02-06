@@ -137,7 +137,7 @@ def main():
                         cmc[13], cmc[14],
                         cmc[15], cmc[16], cmc[17], cmc[18], cmc[19], mAP))
                 results = [item for item in cmc[:20]] + [mAP]
-                model_name = 'VehicleNet-{}'.format(0)
+                model_name = 'VehicleNet-{}'.format(args.hash_bit_number)
                 results_to_excel(results, model_name, args.target_names[0])
 
             model_save_dir = args.save_dir
