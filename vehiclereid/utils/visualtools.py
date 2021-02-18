@@ -8,7 +8,7 @@ import pandas as pd
 from .iotools import mkdir_if_missing
 
 
-def visualize_ranked_results(distmat, dataset, save_dir='log/ranked_results', topk=20):
+def visualize_ranked_results(distmat, dataset, save_dir='log/ranked_results', topk=20,args = None):
     """
     Visualize ranked results
     Args:
@@ -19,6 +19,7 @@ def visualize_ranked_results(distmat, dataset, save_dir='log/ranked_results', to
     - save_dir: directory to save output images.
     - topk: int, denoting top-k images in the rank list to be visualized.
     """
+    distmat = distmat.T
     num_q, num_g = distmat.shape
 
     print('Visualizing top-{} ranks'.format(topk))
@@ -28,7 +29,8 @@ def visualize_ranked_results(distmat, dataset, save_dir='log/ranked_results', to
     query, gallery = dataset
     assert num_q == len(query)
     assert num_g == len(gallery)
-
+    print('num of query\n',num_q)
+    print('num of gallery\n',num_g)
     indices = np.argsort(distmat, axis=1)
     mkdir_if_missing(save_dir)
 
@@ -47,22 +49,23 @@ def visualize_ranked_results(distmat, dataset, save_dir='log/ranked_results', to
         else:
             dst = osp.join(dst, prefix + '_top' + str(rank).zfill(3) + '_name_' + osp.basename(src))
             shutil.copy(src, dst)
-
-    for q_idx in range(num_q):
+    save_dir = save_dir + '_' + str(args.hash_bit_number)
+    for q_idx in range(20):
         qimg_path, qpid, qcamid = query[q_idx]
         if isinstance(qimg_path, tuple) or isinstance(qimg_path, list):
             qdir = osp.join(save_dir, osp.basename(qimg_path[0]))
         else:
             qdir = osp.join(save_dir, osp.basename(qimg_path))
         mkdir_if_missing(qdir)
-        _cp_img_to(qimg_path, qdir, rank=0, prefix='query')
+        _cp_img_to(qimg_path, qdir, rank=0, prefix='query_{}'.format(qpid))
 
         rank_idx = 1
         for g_idx in indices[q_idx, :]:
             gimg_path, gpid, gcamid = gallery[g_idx]
-            invalid = (qpid == gpid) & (qcamid == gcamid)
+           # invalid = (qpid == gpid) & (qcamid == gcamid)
+            invalid = False
             if not invalid:
-                _cp_img_to(gimg_path, qdir, rank=rank_idx, prefix='gallery')
+                _cp_img_to(gimg_path, qdir, rank=rank_idx, prefix='gallery_{}'.format(gpid))
                 rank_idx += 1
                 if rank_idx > topk:
                     break
