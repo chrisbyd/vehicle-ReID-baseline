@@ -137,7 +137,7 @@ def main():
                         cmc[13], cmc[14],
                         cmc[15], cmc[16], cmc[17], cmc[18], cmc[19], mAP))
                 results = [item for item in cmc[:20]] + [mAP]
-                model_name = 'VehicleNet-{}'.format(args.hash_bit_number)
+                model_name = 'VehicleNet{}{}{}-{}'.format(args.lambda_xent,args.lambda_htri,args.lambda_quant,args.hash_bit_number)
                 results_to_excel(results, model_name, args.target_names[0])
 
             model_save_dir = args.save_dir
@@ -189,7 +189,7 @@ def train(epoch, model, criterion_xent, criterion_htri, criterion_quant, optimiz
 
         q_loss =  criterion_quant(features)
 
-        loss = args.lambda_xent * xent_loss + args.lambda_htri * htri_loss + q_loss
+        loss = args.lambda_xent * xent_loss + args.lambda_htri * htri_loss + args.lambda_quant * q_loss
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()

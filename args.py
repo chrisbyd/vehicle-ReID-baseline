@@ -41,7 +41,7 @@ def argument_parser():
     # ************************************************************
     parser.add_argument('--optim', type=str, default='adam',
                         help='optimization algorithm (see optimizers.py)')
-    parser.add_argument('--lr', default=0.0003, type=float,
+    parser.add_argument('--lr', default=0.001, type=float,
                         help='initial learning rate')
     parser.add_argument('--weight-decay', default=5e-04, type=float,
                         help='weight decay')
@@ -101,6 +101,8 @@ def argument_parser():
                         help='weight to balance cross entropy loss')
     parser.add_argument('--lambda-htri', type=float, default=1,
                         help='weight to balance hard triplet loss')
+    parser.add_argument('--lambda-quant', type=float,default=1,
+                        help= 'weight to balance quantization loss')
 
     # ************************************************************
     # Architecture
